@@ -1,12 +1,12 @@
 from django.shortcuts import render, redirect,get_object_or_404
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponse
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.http import require_POST
 from django.contrib import messages
 from .forms import CreateImageForm
-
+from common.decorators import ajax_required
 from .models import Image
-
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 
 # Create your views here.
 @login_required
@@ -32,7 +32,7 @@ def image_detail(request, id, slug):
         request, "images/image/detail.html", {"section": "images", "image": image}
     )
 
-
+@ajax_required
 @login_required
 @require_POST
 def image_like(request):
@@ -53,3 +53,31 @@ def image_like(request):
             pass
 
     return JsonResponse({'status': 'error'})
+
+
+@login_required
+def image_list(request):
+    images = Image.objects.all()
+    paginator = Paginator(images, 8)  # 8 images per page
+
+    page_number = request.GET.get("page")
+
+    try:
+        images = paginator.page(page_number)
+    except PageNotAnInteger:
+        images = paginator.page(1)
+    except EmptyPage:
+        # AJAX request asking for a page beyond range → return empty
+        if request.headers.get("X-Requested-With") == "XMLHttpRequest":
+            return HttpResponse("")
+        # Normal request → return last page
+        images = paginator.page(paginator.num_pages)
+
+    # AJAX request → return only partial HTML (list_ajax.html)
+    if request.headers.get("X-Requested-With") == "XMLHttpRequest":
+        return render(request, "images/image/list_ajax.html",
+                      {"images": images, "section": "images"})
+
+    # Normal browser request
+    return render(request, "images/image/list.html",
+                  {"images": images, "section": "images"})

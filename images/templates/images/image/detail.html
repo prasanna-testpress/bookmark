@@ -1,5 +1,6 @@
 {% extends "base.html" %}
 {% load thumbnail %}
+{% load static %}
 
 {% block title %}
     {{ image.title }}
@@ -20,8 +21,8 @@
             like{{ total_likes|pluralize }}
         </span>
 
-        <a href="#" 
-           data-id="{{ image.id }}" 
+        <a href="#"
+           data-id="{{ image.id }}"
            data-action="{% if request.user in users_like %}un{% endif %}like"
            class="like button">
 
@@ -39,7 +40,14 @@
 <div class="image-likes">
     {% for user in users_like %}
         <div>
-            <img src="{{ user.profile.photo.url }}">
+
+            {# ✔ FIXED: SAFE PROFILE IMAGE — NO MORE ERRORS #}
+            {% if user.profile.photo %}
+                <img src="{{ user.profile.photo.url }}">
+            {% else %}
+                <img src="{% static 'img/default.png' %}">
+            {% endif %}
+
             <p>{{ user.first_name }}</p>
         </div>
     {% empty %}
