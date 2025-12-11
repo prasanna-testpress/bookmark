@@ -1,7 +1,8 @@
 from django import forms
 from .models import Image
-
-
+from django.utils.text import slugify
+from urllib import request
+from django.core.files.base import ContentFile
 class CreateImageForm(forms.ModelForm):
     class Meta:
 
@@ -20,3 +21,23 @@ class CreateImageForm(forms.ModelForm):
         if extension not in valid_extensions:
             raise forms.ValidationError('The given URL does not match valid image extensions.')
         return url
+
+
+    def save(self, force_insert=False, force_update=False, commit=True):
+        image = super().save(commit=False)
+        image_url = self.cleaned_data['url']
+        name = slugify(image.title)
+        extension = image_url.rsplit('.', 1)[1].lower()
+        image_name = f'{name}.{extension}'
+
+        # Add headers to bypass 403 Forbidden
+        headers = {'User-Agent': 'Mozilla/5.0'}
+        req = request.Request(image_url, headers=headers)
+
+        # Download image
+        response = request.urlopen(req)
+        image.image.save(image_name, ContentFile(response.read()), save=False)
+
+        if commit:
+            image.save()
+        return image

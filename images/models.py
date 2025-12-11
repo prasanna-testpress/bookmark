@@ -1,5 +1,4 @@
-from urllib import request
-from django.core.files.base import ContentFile
+
 from django.db import models
 from django.conf import settings
 from django.utils.text import slugify
@@ -31,20 +30,13 @@ class Image(models.Model):
         settings.AUTH_USER_MODEL, related_name="images_liked", blank=True
     )
 
-    def save(self, force_insert=False, force_update=False, commit=True):
-        image = super().save(commit=False)
-        image_url = self.cleaned_data['url']
-        name = slugify(image.title)
-        extension = image_url.rsplit('.', 1)[1].lower()
-        image_name = f'{name}.{extension}'
+    def save(self,*args, **kwargs):
 
-        # download image
-        response = request.urlopen(image_url)
-        image.image.save(image_name, ContentFile(response.read()), save=False)
+        if not self.slug:
 
-        if commit:
-            image.save()
-        return image
+            self.slug = slugify(self.title)
+
+        super().save(*args, **kwargs)
 
     def __str__(self):
 
