@@ -1,46 +1,49 @@
 {% load static %}
 <!DOCTYPE html>
 <html>
-    <head>
-        <title>
-            {% block title %}{% endblock %}
-        </title>
-        <link href="{% static 'css/base.css' %}" rel="stylesheet"></head>
-        <body>
-            <div id="header">
-                <span class="logo">Bookmarks</span>
-                {% if request.user.is_authenticated %}
-                    <ul class="menu">
-                        <li {% if section == "dashboard" %} class="selected" {% endif %}>
-                            <a href="{% url "account:dashboard" %}">My dashboard</a>
-                        </li>
-                        <li {% if section == "images" %} class="selected" {% endif %}>
-                            <a href="#">Images</a>
-                        </li>
-                        <li {% if section == "people" %} class="selected" {% endif %}>
-                            <a href="#">People</a>
-                        </li>
-                    </ul>
-                {% endif %}
-                <span class="user">
-                    {% if request.user.is_authenticated %}
-                        Hello
-                        {{ request.user }},
+<head>
+  <title>{% block title %}{% endblock %}</title>
+  <link rel="stylesheet" href="{% static 'css/base.css' %}">
+</head>
+<body>
 
-                        <form action="{% url 'account:logout' %}" method="post" style="display:inline;">
-                            {% csrf_token %}
-                            <button type="submit" class="btn-logout">Logout</button>
-                        </form>
+<div id="header">
+    <span class="logo">Bookmarks</span>
 
+    {% if request.user.is_authenticated %}
+    <ul class="menu">
+        <li {% if section == "dashboard" %}class="selected"{% endif %}>
+            <a href="{% url 'account:dashboard' %}">Dashboard</a>
+        </li>
+    </ul>
+    {% endif %}
 
-                    {% else %}
-                        <a href="{% url "account:login" %}">Log-in</a>
-                    {% endif %}
-                </span>
-            </div>
+    <span class="user">
+        {% if request.user.is_authenticated %}
+        Hello {{ request.user.first_name }},
+        <form action="{% url 'account:logout' %}" method="post" style="display:inline;">
+            {% csrf_token %}
+            <button type="submit" style="background:none;border:none;color:white;">
+                Logout
+            </button>
+        </form>
+        {% else %}
+        <a href="{% url 'account:login' %}">Log-in</a>
+        {% endif %}
+    </span>
+</div>
 
-            <div id="content"> {% block content %}{% endblock %}
-                </div>
-            </body>
-        </html>
-    </html>
+{% if messages %}
+<ul class="messages">
+  {% for message in messages %}
+  <li class="{{ message.tags }}">{{ message }}</li>
+  {% endfor %}
+</ul>
+{% endif %}
+
+<div id="content">
+  {% block content %}{% endblock %}
+</div>
+
+</body>
+</html>
