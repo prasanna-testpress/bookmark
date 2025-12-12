@@ -11,4 +11,8 @@ urlpatterns = [
 
     # Authentication URLs (login, logout, password reset, etc)
     path('', include('django.contrib.auth.urls')),
+
+    path('users/', views.user_list, name='user_list'),
+    
+    path('users/<username>/', views.user_detail, name='user_detail'),
 ]
