@@ -20,6 +20,9 @@
             <span class="total">{{ total_likes }}</span>
             like{{ total_likes|pluralize }}
         </span>
+        <span class="count">
+ {{ total_views }} view{{ total_views|pluralize }}
+</span>
 
         <a href="#"
            data-id="{{ image.id }}"
@@ -36,6 +39,7 @@
 
     {{ image.description|linebreaks }}
 </div>
+
 
 <div class="image-likes">
     {% for user in users_like %}
